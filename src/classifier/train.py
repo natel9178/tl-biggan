@@ -114,7 +114,7 @@ def train(model, training_data, validation_data, optimizer, device, opt):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-epoch', type=int, default=100)
-    parser.add_argument('-batch_size', type=int, default=8)
+    parser.add_argument('-batch_size', type=int, default=16)
     parser.add_argument('-lr', type=float, default=1e-3)
 
     parser.add_argument('-save_model', default=None)
@@ -129,7 +129,7 @@ def main():
 
     model = AttributeClassifier(out_features=359, device=device)
 
-    tf = transforms.Compose([ transforms.RandomCrop(229), transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize ])
+    tf = transforms.Compose([ transforms.RandomResizedCrop(229), transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize ])
     full_dataset = LargeScaleAttributesDataset( attributes_file=os.path.join(dataset_root, 'LAD_annotations/attributes.txt'),
                                                 attributes_list=os.path.join(dataset_root, 'LAD_annotations/attribute_list.txt'),
                                                 label_list= os.path.join(dataset_root, 'LAD_annotations/label_list.txt'),
