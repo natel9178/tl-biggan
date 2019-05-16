@@ -22,9 +22,9 @@ class AttributeClassifier(nn.Module):
         for bm_param in self.bm.parameters():
             bm_param.requires_grad = False
         
-        self.fc1 = nn.Linear(self.bm_feature_dim, hidden_size)
-        self.bn1 = nn.BatchNorm1d(hidden_size)
-        self.fc2 = nn.Linear(hidden_size, out_features)
+        self.fc1 = nn.Linear(self.bm_feature_dim, hidden_size).to(device)
+        self.bn1 = nn.BatchNorm1d(hidden_size).to(device)
+        self.fc2 = nn.Linear(hidden_size, out_features).to(device)
 
         torch.nn.init.kaiming_uniform_(self.fc1.weight.data, nonlinearity='relu')
         torch.nn.init.xavier_uniform_(self.fc2.weight.data)
