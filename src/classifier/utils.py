@@ -19,7 +19,7 @@ def calculate_performance(pred, gold):
 
 def create_dataloaders(dataset, training_split=0.9, batch_size=2):
     training_length = int(len(dataset) * training_split)
-    training_dataset, validation_dataset, _ = d.random_split(dataset, [16, 6, len(dataset) - 16 - 6])#[training_length, len(dataset) - training_length])
+    training_dataset, validation_dataset, _ = d.random_split(dataset, [training_length, len(dataset) - training_length])#[training_length, len(dataset) - training_length])
 
     training_data = d.DataLoader(training_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=2)
     validation_data = d.DataLoader(validation_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=2)

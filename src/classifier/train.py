@@ -14,8 +14,11 @@ from LargeScaleAttributesDataset import LargeScaleAttributesDataset
 import utils as u
 from torchvision import transforms
 from torchsummary import summary
+# from torch.utils.tensorboard import SummaryWriter
 
 dataset_root = '../../data/largescale/'
+normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
+                                  std=[0.5, 0.5, 0.5])
 
 def train_epoch(model, training_data, optimizer, device):
     model.train()
@@ -62,6 +65,9 @@ def eval_epoch(model, validation_data, device):
 
 def train(model, training_data, validation_data, optimizer, device, opt):
     valid_accus = []
+    # if opt.log_tensorboard:
+    #     writer = SummaryWriter()
+
     for epoch_i in range(opt.epoch):
         print('[ Epoch', epoch_i, ']')
 
@@ -97,6 +103,13 @@ def train(model, training_data, validation_data, optimizer, device, opt):
                 if valid_accu >= max(valid_accus):
                     torch.save(checkpoint, model_name)
                     print('    - [Info] The checkpoint file has been updated.')
+        
+        # if opt.log_tensorboard:
+        #     writer.add_scalar('data/training_loss', train_loss, epoch_i)
+        #     writer.add_scalar('data/training_accuracy', train_accu, epoch_i)
+        #     writer.add_scalar('data/validation_loss', valid_loss, epoch_i)
+        #     writer.add_scalar('data/validation_accuracy', valid_accu, epoch_i)
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -106,6 +119,7 @@ def main():
 
     parser.add_argument('-save_model', default=None)
     parser.add_argument('-save_mode', type=str, choices=['all', 'best'], default='best')
+    parser.add_argument('-log_tensorboard', action='store_true')
 
     parser.add_argument('-no_cuda', action='store_true')
 
@@ -115,7 +129,7 @@ def main():
 
     model = AttributeClassifier(out_features=359)
 
-    tf = transforms.Compose([ transforms.RandomCrop(229), transforms.ToTensor() ])
+    tf = transforms.Compose([ transforms.RandomCrop(229), transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize ])
     full_dataset = LargeScaleAttributesDataset( attributes_file=os.path.join(dataset_root, 'LAD_annotations/attributes.txt'),
                                                 attributes_list=os.path.join(dataset_root, 'LAD_annotations/attribute_list.txt'),
                                                 label_list= os.path.join(dataset_root, 'LAD_annotations/label_list.txt'),
