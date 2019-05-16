@@ -30,6 +30,7 @@ class AttributeClassifier(nn.Module):
         z = self.bm(input)
         z = self.fc1(z)
         z = self.bn1(z)
+        z = F.relu(z)
         logits = self.fc2(z)
         return logits
 
