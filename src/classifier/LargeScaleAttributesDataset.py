@@ -17,8 +17,8 @@ class LargeScaleAttributesDataset(Dataset):
         """
         self.attributes = pd.read_csv(attributes_file, header=None)
         self.attributes[2] = self.attributes[2].map(lambda x: [int(y) for y in x.strip(" []").split()])
-        self.num_attributes = len(self.attributes.loc[0, 2])
-        print(self.num_attributes)
+        self.num_attributes = len(self.attributes.iloc[0, 2])
+        # print(self.num_attributes)
         self.attributes_names = pd.read_csv(attributes_list, header=None)
         self.label_list = pd.read_csv(label_list, header=None)
         self.root_dir = root_dir
@@ -29,13 +29,13 @@ class LargeScaleAttributesDataset(Dataset):
         return len(self.attributes.index)
 
     def __getitem__(self, idx):
-        img_name = os.path.join(self.root_dir, self.attributes.loc[idx, 1].strip())
+        img_name = os.path.join(self.root_dir, self.attributes.iloc[idx, 1].strip())
         image = Image.open(img_name)
 
         if self.transform:
             image = self.transform(image)
 
-        sample = {'image': image, 'attributes': torch.Tensor(self.attributes.loc[idx, 2])}
+        sample = {'image': image, 'attributes': torch.Tensor(self.attributes.iloc[idx, 2])}
 
         return sample
 
