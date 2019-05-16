@@ -26,8 +26,8 @@ class AttributeClassifier(nn.Module):
         self.bn1 = nn.BatchNorm1d(hidden_size)
         self.fc2 = nn.Linear(hidden_size, out_features)
 
-        torch.nn.init.kaiming_uniform_(self.fc1, nonlinearity='relu')
-        torch.nn.init.xavier_uniform_(self.fc2)
+        torch.nn.init.kaiming_uniform_(self.fc1.weight.data, nonlinearity='relu')
+        torch.nn.init.xavier_uniform_(self.fc2.weight.data)
 
     def forward(self, input):
         z = self.bm(input)
