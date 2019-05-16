@@ -18,7 +18,6 @@ dependencies:
     - tensorboardx==1.6
     - torch==1.1.0
     - torchsummary==1.5.1
-    - gettext==0.19.8.1=h15daf44_3
     - icu==58.2=h4b95b61_1
     - qt==5.9.7=h468cd18_1
     - hdf5==1.10.4=hfa1e0ec_0
