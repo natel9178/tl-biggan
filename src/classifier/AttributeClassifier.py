@@ -12,9 +12,9 @@ import pretrainedmodels.utils as utils
 from torchsummary import summary
 
 class AttributeClassifier(nn.Module):
-    def __init__(self, out_features=10, base_model_name='xception', hidden_size=1024):
+    def __init__(self, out_features=10, base_model_name='xception', hidden_size=1024, device='cuda'):
         super(AttributeClassifier, self).__init__()
-        self.bm = pm.__dict__[base_model_name](num_classes=1000, pretrained='imagenet')
+        self.bm = pm.__dict__[base_model_name](num_classes=1000, pretrained='imagenet').to(device)
         self.bm_feature_dim = self.bm.last_linear.in_features
         self.input_size = self.bm.input_size
         self.bm.last_linear = pm.utils.Identity()

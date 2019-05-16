@@ -127,7 +127,7 @@ def main():
     opt.cuda = not opt.no_cuda
     device = torch.device('cuda' if opt.cuda else 'cpu')
 
-    model = AttributeClassifier(out_features=359)
+    model = AttributeClassifier(out_features=359, device=device)
 
     tf = transforms.Compose([ transforms.RandomCrop(229), transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize ])
     full_dataset = LargeScaleAttributesDataset( attributes_file=os.path.join(dataset_root, 'LAD_annotations/attributes.txt'),
