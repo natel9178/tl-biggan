@@ -12,7 +12,7 @@ import pretrainedmodels.utils as utils
 from torchsummary import summary
 
 class AttributeClassifier(nn.Module):
-    def __init__(self, out_features=, base_model_name='xception', hidden_size=1024):
+    def __init__(self, out_features=10, base_model_name='xception', hidden_size=1024):
         super(AttributeClassifier, self).__init__()
         self.bm = pm.__dict__[base_model_name](num_classes=1000, pretrained='imagenet')
         self.bm_feature_dim = self.bm.last_linear.in_features
@@ -23,12 +23,13 @@ class AttributeClassifier(nn.Module):
             bm_param.requires_grad = False
         
         self.fc1 = nn.Linear(self.bm_feature_dim, hidden_size)
+        self.bn1 = nn.BatchNorm1d(hidden_size)
         self.fc2 = nn.Linear(hidden_size, out_features)
-        
 
     def forward(self, input):
         z = self.bm(input)
         z = self.fc1(z)
+        z = self.bn1(z)
         logits = self.fc2(z)
         return logits
 

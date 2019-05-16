@@ -3,20 +3,22 @@ from torchvision import transforms, utils
 import pandas as pd
 import os
 from skimage import io, transform
+from PIL import Image
+import numpy as np
+import torch
 
 # 078017
 class LargeScaleAttributesDataset(Dataset):
     def __init__(self, attributes_file, attributes_list, label_list, root_dir, transform=None):
         """
         Args:
-            root_dir (string): Directory with all the images.
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
         self.attributes = pd.read_csv(attributes_file, header=None)
-        self.attributes[2] = self.attributes[2].map(lambda x: x.strip(" []").split())
+        self.attributes[2] = self.attributes[2].map(lambda x: [int(y) for y in x.strip(" []").split()])
         self.num_attributes = len(self.attributes.iloc[0, 2])
-        print(self.num_attributes)
+        # print(self.num_attributes)
         self.attributes_names = pd.read_csv(attributes_list, header=None)
         self.label_list = pd.read_csv(label_list, header=None)
         self.root_dir = root_dir
@@ -28,12 +30,12 @@ class LargeScaleAttributesDataset(Dataset):
 
     def __getitem__(self, idx):
         img_name = os.path.join(self.root_dir, self.attributes.iloc[idx, 1].strip())
-        image = io.imread(img_name)
+        image = Image.open(img_name)
 
         if self.transform:
             image = self.transform(image)
 
-        sample = {'image': image, 'attributes': self.attributes.iloc[idx, 2], 'label': self.attributes.iloc[idx, 0]}
+        sample = {'image': image, 'attributes': torch.Tensor(self.attributes.iloc[idx, 2])}
 
         return sample
 
@@ -42,4 +44,3 @@ if __name__ == "__main__":
                                         attributes_list='./largescale/LAD_annotations/attribute_list.txt',
                                         label_list='./largescale/LAD_annotations/label_list.txt',
                                         root_dir='./largescale')
-    print(data[0])
