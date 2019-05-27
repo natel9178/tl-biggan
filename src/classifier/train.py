@@ -14,7 +14,7 @@ from LargeScaleAttributesDataset import LargeScaleAttributesDataset
 import utils as u
 from torchvision import transforms
 from torchsummary import summary
-# from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 dataset_root = '../../data/largescale/'
 normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
@@ -55,29 +55,31 @@ def run_epoch(model, data, device, is_train=False, optimizer=None):
     return total_loss, n_total_correct / n_total, counter, total_f1 / counter
 
 
-def train(model, training_data, validation_data, optimizer, device, opt):
-    valid_accus = []
-    # if opt.log_tensorboard:
-    #     writer = SummaryWriter()
+def train(model, training_data, validation_data, optimizer, scheduler, device, opt):
+    metrics = []
+    if opt.log_tensorboard:
+        writer = SummaryWriter()
 
     for epoch_i in range(opt.epoch):
         print('[ Epoch', epoch_i, ']')
 
         #- Pass through training data
         start = time.time()
-        train_loss, train_accu, count, avg_f1 = run_epoch(model, training_data, device, is_train=True, optimizer=optimizer)
+        train_loss, train_accu, train_count, train_avg_f1 = run_epoch(model, training_data, device, is_train=True, optimizer=optimizer)
         print('  - (Training) accuracy: {accu:3.3f} %, '\
               'avg_loss: {loss:8.5f}, avg_f1: {f1:3.3f}, elapse: {elapse:3.3f} min'.format(accu=100*train_accu,
-                  loss=train_loss/count, f1=avg_f1, elapse=(time.time()-start)/60))
+                  loss=train_loss/train_count, f1=train_avg_f1, elapse=(time.time()-start)/60))
 
         #- Pass through validation data
         start = time.time()
-        valid_loss, valid_accu, count, avg_f1 = run_epoch(model, validation_data, device, is_train=False)
+        valid_loss, valid_accu, valid_count, valid_avg_f1 = run_epoch(model, validation_data, device, is_train=False)
         print('  - (Validation) accuracy: {accu:3.3f} %, '\
                 'avg_loss: {loss:8.5f}, avg_f1: {f1:3.3f}, elapse: {elapse:3.3f} min'.format(
-                    accu=100*valid_accu, loss=valid_loss/count, f1=avg_f1, elapse=(time.time()-start)/60))
+                    accu=100*valid_accu, loss=valid_loss/valid_count, f1=valid_avg_f1, elapse=(time.time()-start)/60))
 
-        valid_accus += [valid_accu]
+        metrics += [valid_avg_f1]
+
+        scheduler.step(valid_loss)
 
         #- Save checkpoint
         if opt.save_model:
@@ -92,15 +94,17 @@ def train(model, training_data, validation_data, optimizer, device, opt):
                 torch.save(checkpoint, model_name)
             elif opt.save_mode == 'best':
                 model_name = opt.save_model + '.chkpt'
-                if valid_accu >= max(valid_accus):
+                if valid_avg_f1 >= max(metrics):
                     torch.save(checkpoint, model_name)
                     print('    - [Info] The checkpoint file has been updated.')
         
-        # if opt.log_tensorboard:
-        #     writer.add_scalar('data/training_loss', train_loss, epoch_i)
-        #     writer.add_scalar('data/training_accuracy', train_accu, epoch_i)
-        #     writer.add_scalar('data/validation_loss', valid_loss, epoch_i)
-        #     writer.add_scalar('data/validation_accuracy', valid_accu, epoch_i)
+        if opt.log_tensorboard:
+            writer.add_scalar('data/training_average_loss', train_loss/train_count, epoch_i)
+            writer.add_scalar('data/training_accuracy', train_accu, epoch_i)
+            writer.add_scalar('data/training_average_f1', train_avg_f1, epoch_i)
+            writer.add_scalar('data/validation_average_loss', valid_loss/valid_count, epoch_i)
+            writer.add_scalar('data/validation_accuracy', valid_accu, epoch_i)
+            writer.add_scalar('data/validation_average_f1', valid_avg_f1, epoch_i)
 
 
 def main():
@@ -133,8 +137,9 @@ def main():
     summary(model, input_size=(3, 299, 299))
 
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr)
+    scheduler = ReduceLROnPlateau(optimizer, 'min')
 
-    train(model, training_data, validation_data, optimizer, device, opt)
+    train(model, training_data, validation_data, optimizer, scheduler, device, opt)
 
 if __name__ == "__main__":
     main()
