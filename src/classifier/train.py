@@ -8,6 +8,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+import torch.optim.lr_scheduler as ls
 import torch.utils.data as d
 from AttributeClassifier import AttributeClassifier
 from LargeScaleAttributesDataset import LargeScaleAttributesDataset
@@ -58,7 +59,7 @@ def run_epoch(model, data, device, is_train=False, optimizer=None):
 def train(model, training_data, validation_data, optimizer, scheduler, device, opt):
     metrics = []
     if opt.log_tensorboard:
-        writer = SummaryWriter()
+        writer = SummaryWriter(opt.log_tensorboard)
 
     for epoch_i in range(opt.epoch):
         print('[ Epoch', epoch_i, ']')
@@ -115,7 +116,7 @@ def main():
 
     parser.add_argument('-save_model', default=None)
     parser.add_argument('-save_mode', type=str, choices=['all', 'best'], default='best')
-    parser.add_argument('-log_tensorboard', action='store_true')
+    parser.add_argument('-log_tensorboard', default=None)
 
     parser.add_argument('-no_cuda', action='store_true')
 
@@ -137,7 +138,7 @@ def main():
     summary(model, input_size=(3, 299, 299))
 
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr)
-    scheduler = ReduceLROnPlateau(optimizer, 'min')
+    scheduler = ls.ReduceLROnPlateau(optimizer, 'min')
 
     train(model, training_data, validation_data, optimizer, scheduler, device, opt)
 
