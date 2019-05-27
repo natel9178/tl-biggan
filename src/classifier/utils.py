@@ -19,7 +19,7 @@ def calculate_performance(pred, gold):
     # print(gold)
     n_correct = torch.sum(predictions == gold) # dim=0 for per attribute accuracy
     total_labels = predictions.shape[0] * predictions.shape[1]
-    f1 = f1_score(gold.detach().numpy(), predictions.detach().numpy(), average='weighted')
+    f1 = f1_score(gold.cpu().detach().numpy(), predictions.cpu().detach().numpy(), average='weighted')
 
     # print(f1, n_correct.item(), predictions.shape[0] * predictions.shape[1])
 
