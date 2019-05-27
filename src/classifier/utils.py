@@ -4,18 +4,29 @@ import torch.nn.functional as F
 from PIL import Image
 import numpy as np
 import torch
+import torch.nn as nn
+from torch.autograd import Variable
+from losses import functional_bfe_with_logits
+from sklearn.metrics import f1_score
 
 
 def calculate_performance(pred, gold):
+    loss = functional_bfe_with_logits(pred, gold)
+
     probs = torch.sigmoid(pred)
-    loss = F.binary_cross_entropy(probs, gold)
-    
     predictions = torch.round(probs)
+    # print(predictions)
+    # print(gold)
     n_correct = torch.sum(predictions == gold) # dim=0 for per attribute accuracy
+    total_labels = predictions.shape[0] * predictions.shape[1]
+    f1 = f1_score(gold.detach().numpy(), predictions.detach().numpy(), average='weighted')
+
+    # print(f1, n_correct.item(), predictions.shape[0] * predictions.shape[1])
 
     # TODO: Per attribute accuracy
 
-    return loss, n_correct.item()
+    return loss, n_correct.item(), total_labels, f1
+
 
 def create_dataloaders(dataset, training_split=0.9, batch_size=2, overfit_len=None, validation_batch_size=128):
     training_length = int(len(dataset) * training_split)

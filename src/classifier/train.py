@@ -20,47 +20,39 @@ dataset_root = '../../data/largescale/'
 normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
                                   std=[0.5, 0.5, 0.5])
 
-def train_epoch(model, training_data, optimizer, device):
-    model.train()
+def run_epoch(model, data, device, is_train=False, optimizer=None):
+    if is_train: model.train()
+    else: model.eval()
 
     total_loss = 0
     n_total = 0
     n_total_correct = 0
+    counter = 0
+    total_f1 = 0
 
-    for batch in tqdm(training_data, mininterval=2, desc='  - (Training)   ', leave=False):
-        optimizer.zero_grad()
-        x, y = batch['image'].to(device), batch['attributes'].to(device)
-
-        preds = model(x)
-        loss, n_correct = u.calculate_performance(preds, y)
-        loss.backward()
-        optimizer.step()
-
-        total_loss += loss.item()
-        n_total_correct += n_correct
-        n_total += y.shape[0] * y.shape[1]
-    
-    return total_loss, n_total_correct / n_total
-
-
-def eval_epoch(model, validation_data, device):
-    model.eval()
-
-    total_loss = 0
-    n_total = 0
-    n_total_correct = 0
-
-    with torch.no_grad():
-        for batch in tqdm(validation_data, mininterval=2, desc='  - (Validating)   ', leave=False):
+    batch_iterator = tqdm(data, mininterval=2, desc='  - (Training)   ', leave=False)
+    with torch.set_grad_enabled(is_train):
+        for batch in batch_iterator:
+            if is_train: optimizer.zero_grad()
+            
             x, y = batch['image'].to(device), batch['attributes'].to(device)
             preds = model(x)
-            loss, n_correct = u.calculate_performance(preds, y)
+            loss, n_correct, total_labels, f1 = u.calculate_performance(preds, y)
+
+            if is_train:
+                loss.backward()
+                optimizer.step()
 
             total_loss += loss.item()
             n_total_correct += n_correct
-            n_total += y.shape[0] * y.shape[1]
+            n_total += total_labels
+            counter += 1
+            total_f1 += f1
 
-    return total_loss, n_total_correct / n_total
+            batch_iterator.set_description( 'accuracy: {accu:3.3f}%, avg_loss: {avg_loss:8.5f}, avg_f1: {f1:3.3f}'.format(accu=100*n_total_correct/n_total,
+                  avg_loss=total_loss/counter, f1=total_f1/counter))
+    
+    return total_loss, n_total_correct / n_total, counter, total_f1 / counter
 
 
 def train(model, training_data, validation_data, optimizer, device, opt):
@@ -73,17 +65,17 @@ def train(model, training_data, validation_data, optimizer, device, opt):
 
         #- Pass through training data
         start = time.time()
-        train_loss, train_accu = train_epoch(model, training_data, optimizer, device)
+        train_loss, train_accu, count, avg_f1 = run_epoch(model, training_data, device, is_train=True, optimizer=optimizer)
         print('  - (Training) accuracy: {accu:3.3f} %, '\
-              'loss: {loss:8.5f}, elapse: {elapse:3.3f} min'.format(accu=100*train_accu,
-                  loss=train_loss, elapse=(time.time()-start)/60))
+              'avg_loss: {loss:8.5f}, avg_f1: {f1:3.3f}, elapse: {elapse:3.3f} min'.format(accu=100*train_accu,
+                  loss=train_loss/count, f1=avg_f1, elapse=(time.time()-start)/60))
 
         #- Pass through validation data
         start = time.time()
-        valid_loss, valid_accu = eval_epoch(model, validation_data, device)
+        valid_loss, valid_accu, count, avg_f1 = run_epoch(model, validation_data, device, is_train=False)
         print('  - (Validation) accuracy: {accu:3.3f} %, '\
-                'loss: {loss:8.5f}, elapse: {elapse:3.3f} min'.format(
-                    accu=100*valid_accu, loss=valid_loss, elapse=(time.time()-start)/60))
+                'avg_loss: {loss:8.5f}, avg_f1: {f1:3.3f}, elapse: {elapse:3.3f} min'.format(
+                    accu=100*valid_accu, loss=valid_loss/count, f1=avg_f1, elapse=(time.time()-start)/60))
 
         valid_accus += [valid_accu]
 
