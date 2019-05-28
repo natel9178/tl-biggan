@@ -149,7 +149,7 @@ def main():
         model.load_state_dict(checkpoint['model'])
         start_epoch = checkpoint['epoch']
         saved_opt = checkpoint['settings']
-        if checkpoint['optimizer']: optimizer.load_state_dict(checkpoint['optimizer'])
+        if 'optimizer' in checkpoint: optimizer.load_state_dict(checkpoint['optimizer'])
         if not log_tensorboard: log_tensorboard = saved_opt.log_tensorboard
 
     train(model, training_data, validation_data, optimizer, scheduler, device, opt, start_epoch, log_tensorboard)
