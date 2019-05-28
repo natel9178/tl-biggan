@@ -67,6 +67,10 @@ def train(model, training_data, validation_data, optimizer, scheduler, device, o
 
         #- Pass through training data
         start = time.time()
+
+        current_lr = scheduler.get_lr()
+        print('    - [Info] current LR is', current_lr)
+
         train_loss, train_accu, train_count, train_avg_f1 = run_epoch(model, training_data, device, is_train=True, optimizer=optimizer)
         print('  - (Training) accuracy: {accu:3.3f} %, '\
               'avg_loss: {loss:8.5f}, avg_f1: {f1:3.3f}, elapse: {elapse:3.3f} min'.format(accu=100*train_accu,
@@ -107,6 +111,7 @@ def train(model, training_data, validation_data, optimizer, scheduler, device, o
             writer.add_scalar('data/validation_average_loss', valid_loss/valid_count, epoch_i)
             writer.add_scalar('data/validation_accuracy', valid_accu, epoch_i)
             writer.add_scalar('data/validation_average_f1', valid_avg_f1, epoch_i)
+            writer.add_scalar('data/lr', current_lr, epoch_i)
 
 
 def main():
