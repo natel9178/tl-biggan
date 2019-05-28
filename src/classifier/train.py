@@ -140,7 +140,7 @@ def main():
     summary(model, input_size=(3, 299, 299))
 
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr)
-    scheduler = ls.ReduceLROnPlateau(optimizer, 'min')
+    scheduler = ls.ReduceLROnPlateau(optimizer, 'min', patience=5)
 
     start_epoch = 0
     log_tensorboard = opt.log_tensorboard
