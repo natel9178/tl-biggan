@@ -148,7 +148,7 @@ def main():
         checkpoint = torch.load(opt.load_model)
         model.load_state_dict(checkpoint['model'])
         start_epoch = checkpoint['epoch']
-        saved_opt = checkpoint['opt']
+        saved_opt = checkpoint['settings']
         if checkpoint['optimizer']: optimizer.load_state_dict(checkpoint['optimizer'])
         if not log_tensorboard: log_tensorboard = saved_opt.log_tensorboard
 
