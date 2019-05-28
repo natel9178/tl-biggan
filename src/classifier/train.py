@@ -16,6 +16,7 @@ import utils as u
 from torchvision import transforms
 from torchsummary import summary
 from torch.utils.tensorboard import SummaryWriter
+from warmup_scheduler import GradualWarmupScheduler
 
 dataset_root = '../../data/largescale/'
 normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
@@ -80,7 +81,7 @@ def train(model, training_data, validation_data, optimizer, scheduler, device, o
 
         metrics += [valid_avg_f1]
 
-        scheduler.step(valid_loss)
+        scheduler.step() # Valid_loss
 
         #- Save checkpoint
         if opt.save_model:
@@ -140,7 +141,8 @@ def main():
     summary(model, input_size=(3, 299, 299))
 
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr)
-    scheduler = ls.ReduceLROnPlateau(optimizer, 'min', patience=5)
+    scheduler_plateau = ls.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
+    scheduler_warmup = GradualWarmupScheduler(optimizer, multiplier=8, total_epoch=10, after_scheduler=scheduler_plateau)
 
     start_epoch = 0
     log_tensorboard = opt.log_tensorboard
@@ -152,7 +154,7 @@ def main():
         if 'optimizer' in checkpoint: optimizer.load_state_dict(checkpoint['optimizer'])
         if not log_tensorboard: log_tensorboard = saved_opt.log_tensorboard
 
-    train(model, training_data, validation_data, optimizer, scheduler, device, opt, start_epoch, log_tensorboard)
+    train(model, training_data, validation_data, optimizer, scheduler_warmup, device, opt, start_epoch, log_tensorboard)
 
 if __name__ == "__main__":
     main()
