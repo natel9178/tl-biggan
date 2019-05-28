@@ -68,7 +68,7 @@ def train(model, training_data, validation_data, optimizer, scheduler, device, o
         #- Pass through training data
         start = time.time()
 
-        current_lr = scheduler.get_lr()
+        current_lr = scheduler.get_lr()[0]
         print('    - [Info] current LR is', current_lr)
 
         train_loss, train_accu, train_count, train_avg_f1 = run_epoch(model, training_data, device, is_train=True, optimizer=optimizer)
