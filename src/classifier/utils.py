@@ -27,6 +27,17 @@ def calculate_performance(pred, gold):
 
     return loss, n_correct.item(), total_labels, f1
 
+def unfreeze_layers(model):
+    for bm_param in model.bm.block12.parameters():
+        bm_param.requires_grad = True
+    for bm_param in model.bm.conv3.parameters():
+        bm_param.requires_grad = True
+    for bm_param in model.bm.bn3.parameters():
+        bm_param.requires_grad = True
+    for bm_param in model.bm.conv4.parameters():
+        bm_param.requires_grad = True
+    for bm_param in model.bm.bn4.parameters():
+        bm_param.requires_grad = True
 
 def create_dataloaders(dataset, training_split=0.9, batch_size=2, overfit_len=None, validation_batch_size=128):
     training_length = int(len(dataset) * training_split)

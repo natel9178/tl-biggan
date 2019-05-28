@@ -84,9 +84,9 @@ def train(model, training_data, validation_data, optimizer, scheduler, device, o
 
         #- Save checkpoint
         if opt.save_model:
-            model_state_dict = model.state_dict()
             checkpoint = {
-                'model': model_state_dict,
+                'model': model.state_dict(),
+                'optimizer': optimizer.state_dict(),
                 'settings': opt,
                 'epoch': epoch_i}
 
@@ -126,15 +126,7 @@ def main():
     device = torch.device('cuda' if opt.cuda else 'cpu')
 
     model = AttributeClassifier(out_features=359, device=device)
-
-    start_epoch = 0
-    log_tensorboard = opt.log_tensorboard
-    if opt.load_model:
-        checkpoint = torch.load(opt.load_model)
-        model.load_state_dict(checkpoint['model'])
-        start_epoch = checkpoint['epoch_i']
-        saved_opt = checkpoint['opt']
-        if not log_tensorboard: log_tensorboard = saved_opt.log_tensorboard
+    u.unfreeze_layers(model)
 
     tf = transforms.Compose([ transforms.RandomResizedCrop(229), transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize ])
     full_dataset = LargeScaleAttributesDataset( attributes_file=os.path.join(dataset_root, 'LAD_annotations/attributes.txt'),
@@ -150,7 +142,17 @@ def main():
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr)
     scheduler = ls.ReduceLROnPlateau(optimizer, 'min')
 
-    train(model, training_data, validation_data, optimizer, scheduler, device, opt, start_epoch, log_tensorboard)
+    start_epoch = 0
+    log_tensorboard = opt.log_tensorboard
+    if opt.load_model:
+        checkpoint = torch.load(opt.load_model)
+        model.load_state_dict(checkpoint['model'])
+        start_epoch = checkpoint['epoch_i']
+        saved_opt = checkpoint['opt']
+        if checkpoint['optimizer']: optimizer.load_state_dict(checkpoint['optimizer'])
+        if not log_tensorboard: log_tensorboard = saved_opt.log_tensorboard
+
+    # train(model, training_data, validation_data, optimizer, scheduler, device, opt, start_epoch, log_tensorboard)
 
 if __name__ == "__main__":
     main()
