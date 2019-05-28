@@ -152,7 +152,7 @@ def main():
         if checkpoint['optimizer']: optimizer.load_state_dict(checkpoint['optimizer'])
         if not log_tensorboard: log_tensorboard = saved_opt.log_tensorboard
 
-    # train(model, training_data, validation_data, optimizer, scheduler, device, opt, start_epoch, log_tensorboard)
+    train(model, training_data, validation_data, optimizer, scheduler, device, opt, start_epoch, log_tensorboard)
 
 if __name__ == "__main__":
     main()
