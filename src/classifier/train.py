@@ -40,8 +40,8 @@ def run_epoch(model, data, device, is_train=False, optimizer=None, calculate_eve
             
             x, y = batch['image'].to(device), batch['attributes'].to(device)
             preds = model(x)
-            do_calculations = (iterations % calculate_every == 0) or not is_train
-            loss, n_correct, total_labels, f1 = u.calculate_performance(preds, y, do_calculations=do_calculations)
+            # do_calculations = (iterations % calculate_every == 0) or not is_train
+            loss, n_correct, total_labels, f1 = u.calculate_performance(preds, y, do_calculations=True)
 
             if is_train:
                 loss.backward()
@@ -49,11 +49,11 @@ def run_epoch(model, data, device, is_train=False, optimizer=None, calculate_eve
             
             total_loss += loss.item()
             iterations += 1
-            if do_calculations:
-                n_total_correct += n_correct
-                n_total += total_labels
-                total_f1 += f1
-                calc_iterations += 1
+            # if do_calculations:
+            n_total_correct += n_correct
+            n_total += total_labels
+            total_f1 += f1
+            calc_iterations += 1
 
             batch_iterator.set_description( 'accuracy: {accu:3.3f}%, avg_loss: {avg_loss:8.5f}, avg_f1: {f1:3.3f}'.format(accu=100*n_total_correct/n_total,
                 avg_loss=total_loss/iterations, f1=total_f1/calc_iterations))
@@ -151,7 +151,7 @@ def main():
 
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr)
     # scheduler_plateau = ls.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
-    scheduler_cosine = ls.CosineAnnealingLR(optimizer, len(training_data)*100, 0)
+    scheduler_cosine = ls.CosineAnnealingLR(optimizer, 100, 0)
     scheduler_warmup = GradualWarmupScheduler(optimizer, multiplier=4, total_epoch=10, after_scheduler=scheduler_cosine)
 
     start_epoch = 0
