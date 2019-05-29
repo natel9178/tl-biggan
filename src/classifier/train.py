@@ -85,7 +85,7 @@ def train(model, training_data, validation_data, optimizer, scheduler, device, o
 
         metrics += [valid_avg_f1]
 
-        scheduler.step() # Valid_loss
+        scheduler.step(metrics=valid_loss) # Valid_loss
 
         #- Save checkpoint
         if opt.save_model:
