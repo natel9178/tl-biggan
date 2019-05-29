@@ -22,15 +22,16 @@ dataset_root = '../../data/largescale/'
 normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
                                   std=[0.5, 0.5, 0.5])
 
-def run_epoch(model, data, device, is_train=False, optimizer=None):
+def run_epoch(model, data, device, is_train=False, optimizer=None, calculate_every=100):
     if is_train: model.train()
     else: model.eval()
 
     total_loss = 0
     n_total = 0
     n_total_correct = 0
-    counter = 0
+    iterations = 0
     total_f1 = 0
+    calc_iterations = 0
 
     batch_iterator = tqdm(data, mininterval=2, desc='  - (Training)   ', leave=False)
     with torch.set_grad_enabled(is_train):
@@ -39,22 +40,25 @@ def run_epoch(model, data, device, is_train=False, optimizer=None):
             
             x, y = batch['image'].to(device), batch['attributes'].to(device)
             preds = model(x)
-            loss, n_correct, total_labels, f1 = u.calculate_performance(preds, y)
+            do_calculations = (iterations % calculate_every == 0) or not is_train
+            loss, n_correct, total_labels, f1 = u.calculate_performance(preds, y, do_calculations=do_calculations)
 
             if is_train:
                 loss.backward()
                 optimizer.step()
-
+            
             total_loss += loss.item()
-            n_total_correct += n_correct
-            n_total += total_labels
-            counter += 1
-            total_f1 += f1
+            iterations += 1
+            if do_calculations:
+                n_total_correct += n_correct
+                n_total += total_labels
+                total_f1 += f1
+                calc_iterations += 1
 
             batch_iterator.set_description( 'accuracy: {accu:3.3f}%, avg_loss: {avg_loss:8.5f}, avg_f1: {f1:3.3f}'.format(accu=100*n_total_correct/n_total,
-                  avg_loss=total_loss/counter, f1=total_f1/counter))
+                avg_loss=total_loss/iterations, f1=total_f1/calc_iterations))
     
-    return total_loss, n_total_correct / n_total, counter, total_f1 / counter
+    return total_loss, n_total_correct / n_total, iterations, total_f1 / calc_iterations
 
 
 def train(model, training_data, validation_data, optimizer, scheduler, device, opt, start_epoch=0, log_tensorboard=None):

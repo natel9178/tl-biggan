@@ -10,22 +10,25 @@ from losses import functional_bfe_with_logits
 from sklearn.metrics import f1_score
 
 
-def calculate_performance(pred, gold):
+def calculate_performance(pred, gold, do_calculations=True):
+    loss, number_actual_correct, total_labels, f1 = None, None, None, None
+
     loss = functional_bfe_with_logits(pred, gold)
 
-    probs = torch.sigmoid(pred)
-    predictions = torch.round(probs)
-    # print(predictions)
-    # print(gold)
-    n_correct = torch.sum(predictions == gold) # dim=0 for per attribute accuracy
-    total_labels = predictions.shape[0] * predictions.shape[1]
-    f1 = f1_score(gold.cpu().detach().numpy(), predictions.cpu().detach().numpy(), average='weighted')
-
-    # print(f1, n_correct.item(), predictions.shape[0] * predictions.shape[1])
+    if do_calculations:
+        probs = torch.sigmoid(pred)
+        predictions = torch.round(probs)
+        # print(predictions)
+        # print(gold)
+        n_correct = torch.sum(predictions == gold) # dim=0 for per attribute accuracy
+        number_actual_correct = n_correct.item()
+        total_labels = predictions.shape[0] * predictions.shape[1]
+        f1 = f1_score(gold.cpu().detach().numpy(), predictions.cpu().detach().numpy(), average='weighted')
+        # print(f1, n_correct.item(), predictions.shape[0] * predictions.shape[1])
 
     # TODO: Per attribute accuracy
 
-    return loss, n_correct.item(), total_labels, f1
+    return loss, number_actual_correct, total_labels, f1
 
 def unfreeze_layers(model):
     for bm_param in model.bm.block12.parameters():
