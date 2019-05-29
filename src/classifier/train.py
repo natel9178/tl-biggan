@@ -16,7 +16,7 @@ import utils as u
 from torchvision import transforms
 from torchsummary import summary
 from torch.utils.tensorboard import SummaryWriter
-from warmup_scheduler import GradualWarmupScheduler
+from scheduler import GradualWarmupScheduler
 
 dataset_root = '../../data/largescale/'
 normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
@@ -146,8 +146,9 @@ def main():
     summary(model, input_size=(3, 299, 299))
 
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr)
-    scheduler_plateau = ls.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
-    scheduler_warmup = GradualWarmupScheduler(optimizer, multiplier=8, total_epoch=10, after_scheduler=scheduler_plateau)
+    # scheduler_plateau = ls.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
+    scheduler_cosine = ls.CosineAnnealingLR(optimizer, len(training_data)*100, 0)
+    scheduler_warmup = GradualWarmupScheduler(optimizer, multiplier=4, total_epoch=10, after_scheduler=scheduler_cosine)
 
     start_epoch = 0
     log_tensorboard = opt.log_tensorboard
