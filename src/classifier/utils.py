@@ -49,7 +49,7 @@ def create_dataloaders(dataset, training_split=0.9, batch_size=2, overfit_len=No
     else:
         training_dataset, validation_dataset = d.random_split(dataset, [training_length, len(dataset) - training_length])
 
-    training_data = d.DataLoader(training_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=2)
-    validation_data = d.DataLoader(validation_dataset, batch_size=validation_batch_size, shuffle=True, drop_last=False, num_workers=2)
+    training_data = d.DataLoader(training_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=4, pin_memory=True)
+    validation_data = d.DataLoader(validation_dataset, batch_size=validation_batch_size, shuffle=True, drop_last=False, num_workers=4, pin_memory=True)
 
     return training_data, validation_data
