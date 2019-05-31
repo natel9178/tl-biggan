@@ -1,16 +1,16 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from AttributeClassifier import AttributeClassifier
+from .AttributeClassifier import AttributeClassifier
 
 class AttributeClassifierInference(nn.Module):
-    def __init__(self, checkpoint_filename=None, attribute_classifier=None, device='cuda'):
+    def __init__(self, checkpoint_filename=None, attribute_classifier=None, device='cpu'):
         super(AttributeClassifierInference, self).__init__()
         if attribute_classifier:
             self.attribute_classifier = attribute_classifier
         elif checkpoint_filename:
             self.attribute_classifier = AttributeClassifier(out_features=359, device=device)
-            checkpoint = torch.load(checkpoint_filename)
+            checkpoint = torch.load(checkpoint_filename, map_location='cpu')
             self.attribute_classifier.load_state_dict(checkpoint['model'])
             self.saved_opt = checkpoint['settings']
         else:
