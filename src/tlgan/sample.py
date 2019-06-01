@@ -37,7 +37,7 @@ def main():
             noise_vector = torch.from_numpy(truncated_noise_sample(truncation=opt.truncation, batch_size=opt.batch_size)).to(device)
 
             with torch.no_grad():
-                output = generator(noise_vector, class_vector, opt.truncation)
+                output = generator(noise_vector, class_vector, opt.truncation).to(device)
                 output = output.permute(0, 2, 3, 1)
                 output = (((output + 1) / 2.0) * 256 ).round().clamp(0, 255)
             
