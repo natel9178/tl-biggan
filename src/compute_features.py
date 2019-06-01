@@ -27,6 +27,7 @@ class GenGanSamplesDataset(Dataset):
                 on a sample.
         """
         self.samples_filepath = samples_filepath 
+        self.dataset = None
         with h5py.File(self.samples_filepath, 'r') as file:
             self.dataset_len = len(file["images"])
         self.transform = transform
@@ -36,7 +37,7 @@ class GenGanSamplesDataset(Dataset):
 
     def __getitem__(self, idx):
         if self.dataset is None:
-            self.dataset = h5py.File(self.file_path, 'r')['images']
+            self.dataset = h5py.File(self.samples_filepath, 'r')['images']
 
         image = self.dataset[idx]
         if self.transform:
@@ -64,20 +65,19 @@ def main():
     opt.cuda = not opt.no_cuda
     device = torch.device('cuda' if opt.cuda else 'cpu')
     
-    with h5py.File(opt.samples_loc + '.hdf5', 'r') as f:
-        tf = transforms.Compose([ transforms.ToPILImage(), transforms.Resize(229), transforms.ToTensor(), normalize ])
-        data = GenGanSamplesDataset(f, transform=tf)
-        dataloader = DataLoader(data, batch_size=opt.batch_size, num_workers=2)
+    tf = transforms.Compose([ transforms.ToPILImage(), transforms.Resize(229), transforms.ToTensor(), normalize ])
+    data = GenGanSamplesDataset(opt.samples_loc + '.hdf5', transform=tf)
+    dataloader = DataLoader(data, batch_size=opt.batch_size, num_workers=2)
 
-        checkpoint = torch.load(opt.model_weight_loc + '.chkpt', map_location=device)
-        classifier = AttributeClassifier(out_features=359, device=device)
-        classifier.load_state_dict(checkpoint['model'], strict=False)
-        predictor = AttributeClassifierInference(attribute_classifier=classifier, device=device)
-        labels = process_samples(predictor, dataloader, len(data))
-        
-        with h5py.File(opt.samples_loc + '_labels.hdf5', 'w') as l:
-            print('Writing Labels')
-            l.create_dataset('labels', data=labels, compression='gzip', compression_opts=9, chunks=True)
+    checkpoint = torch.load(opt.model_weight_loc + '.chkpt', map_location=device)
+    classifier = AttributeClassifier(out_features=359, device=device)
+    classifier.load_state_dict(checkpoint['model'], strict=False)
+    predictor = AttributeClassifierInference(attribute_classifier=classifier, device=device)
+    labels = process_samples(predictor, dataloader, len(data))
+    
+    with h5py.File(opt.samples_loc + '_labels.hdf5', 'w') as l:
+        print('Writing Labels')
+        l.create_dataset('labels', data=labels, compression='gzip', compression_opts=9, chunks=True)
         
 if __name__ == "__main__":
     main()
