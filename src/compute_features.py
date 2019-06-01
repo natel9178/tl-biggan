@@ -45,11 +45,12 @@ class GenGanSamplesDataset(Dataset):
         return image, idx
 
 
-def process_samples(predictor, dataloader, N):
+def process_samples(predictor, dataloader, N, device):
     predictor.eval()
     labels = np.zeros((N,359))
     for batch in tqdm(dataloader, desc='Processing Generated Images'):
-        images, idxs = batch
+        images, idxs = batch[0].to(device), batch[1].to(device)
+        
         with torch.no_grad():
             pred = predictor(images)
         labels[idxs] = pred.cpu().numpy()
@@ -73,7 +74,7 @@ def main():
     classifier = AttributeClassifier(out_features=359, device=device)
     classifier.load_state_dict(checkpoint['model'], strict=False)
     predictor = AttributeClassifierInference(attribute_classifier=classifier, device=device)
-    labels = process_samples(predictor, dataloader, len(data))
+    labels = process_samples(predictor, dataloader, len(data), device)
     
     with h5py.File(opt.samples_loc + '_labels.hdf5', 'w') as l:
         print('Writing Labels')
