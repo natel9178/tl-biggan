@@ -13,7 +13,7 @@ from biggan import (BigGAN, one_hot_from_names, one_hot_from_int, truncated_nois
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-epochs', type=int, default=5)
-    parser.add_argument('-batch_size', type=int, default=2)
+    parser.add_argument('-batch_size', type=int, default=8)
     parser.add_argument('-save_loc', default='./gan_samples.hdf5')
     parser.add_argument('-truncation', type=float, default=0.7)
     parser.add_argument('-imagenet_class', type=int, default=235)
@@ -28,7 +28,7 @@ def main():
         class_vector = torch.from_numpy(one_hot_from_int(opt.imagenet_class, batch_size=opt.batch_size)).to(device)
 
         np_class_vector = class_vector[0].to('cpu').numpy()
-        should_rewrite = len(f.keys()) != 3 or ('class_vector' in f.keys() and (f['class_vector'][:] != np_class_vector).any())
+        should_rewrite = (len(f.keys()) != 3 and len(f.keys()) != 4) or ('class_vector' in f.keys() and (f['class_vector'][:] != np_class_vector).any())
         print('should_rewrite:', should_rewrite)
         if should_rewrite:
             _ = f.create_dataset("class_vector", data=np_class_vector)
