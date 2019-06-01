@@ -49,8 +49,9 @@ def process_samples(predictor, dataloader, N, device):
     predictor.eval()
     labels = np.zeros((N,359))
     for batch in tqdm(dataloader, desc='Processing Generated Images'):
-        images, idxs = batch[0].to(device), batch[1].to(device)
-        
+        images, idxs = batch
+        images = images.to(device)
+
         with torch.no_grad():
             pred = predictor(images)
         labels[idxs] = pred.cpu().numpy()
