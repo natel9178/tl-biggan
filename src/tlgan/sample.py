@@ -48,8 +48,8 @@ def main():
             else:
                 f["images"].resize((f["images"].shape[0] + output.shape[0]), axis = 0)
                 f["latent_vector"].resize((f["latent_vector"].shape[0] + noise_vector.shape[0]), axis = 0)
-                f["images"][-output.shape[0]:] = output
-                f["latent_vector"][-noise_vector.shape[0]:] = noise_vector
+                f["images"][-output.shape[0]:] = output.detach().to('cpu').numpy()
+                f["latent_vector"][-noise_vector.shape[0]:] = noise_vector.to('cpu').numpy()
 
             
     
