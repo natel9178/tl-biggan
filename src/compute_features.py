@@ -20,20 +20,25 @@ normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
                                   std=[0.5, 0.5, 0.5])
 
 class GenGanSamplesDataset(Dataset):
-    def __init__(self, samples_datafile, transform=None):
+    def __init__(self, samples_filepath, transform=None):
         """
         Args:
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
-        self.datafile = samples_datafile 
+        self.samples_filepath = samples_filepath 
+        with h5py.File(self.samples_filepath, 'r') as file:
+            self.dataset_len = len(file["images"])
         self.transform = transform
 
     def __len__(self):
-        return len(self.datafile['images'])
+        return self.dataset_len
 
     def __getitem__(self, idx):
-        image = self.datafile['images'][idx]
+        if self.dataset is None:
+            self.dataset = h5py.File(self.file_path, 'r')['images']
+
+        image = self.dataset[idx]
         if self.transform:
             image = self.transform(image)
         return image, idx
