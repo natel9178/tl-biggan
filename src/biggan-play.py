@@ -1,5 +1,5 @@
 import torch
-from biggan import (BigGAN, one_hot_from_names, truncated_noise_sample,
+from tlgan.biggan import (BigGAN, one_hot_from_names, truncated_noise_sample,
                                        save_as_images, display_in_terminal)
 
 import logging

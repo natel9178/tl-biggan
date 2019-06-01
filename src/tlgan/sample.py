@@ -1,0 +1,56 @@
+import os
+import math
+import time
+import argparse
+import h5py
+from tqdm import tqdm
+import torch
+import numpy as np
+
+from biggan import (BigGAN, one_hot_from_names, one_hot_from_int, truncated_noise_sample,
+                                       save_as_images, display_in_terminal, convert_to_images)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-epochs', type=int, default=5)
+    parser.add_argument('-batch_size', type=int, default=2)
+    parser.add_argument('-save_loc', default='./gan_samples.hdf5')
+    parser.add_argument('-truncation', type=float, default=0.6)
+    parser.add_argument('-imagenet_class', type=int, default=235)
+    opt = parser.parse_args()
+
+    generator = BigGAN.from_pretrained('biggan-deep-512')
+
+    with h5py.File(opt.save_loc, 'a') as f:
+        class_vector = torch.from_numpy(one_hot_from_int(opt.imagenet_class, batch_size=opt.batch_size))
+
+        np_class_vector = class_vector[0].to('cpu').numpy()
+        should_rewrite = len(f.keys()) != 3 or ('class_vector' in f.keys() and (f['class_vector'][:] != np_class_vector).any())
+        print('should_rewrite:', should_rewrite)
+        if should_rewrite:
+            _ = f.create_dataset("class_vector", data=np_class_vector)
+
+        for i in tqdm(range(opt.epochs)):
+            noise_vector = torch.from_numpy(truncated_noise_sample(truncation=opt.truncation, batch_size=opt.batch_size))
+
+            with torch.no_grad():
+                output = generator(noise_vector, class_vector, opt.truncation).detach().to('cpu').numpy()
+
+            output = output.transpose((0, 2, 3, 1))
+            output = np.clip(np.rint( ((output + 1) / 2.0) * 256 ), 0, 255).astype(np.uint8)
+
+            if should_rewrite:
+                _ = f.create_dataset("images", data=output, compression='gzip', compression_opts=9, chunks=True, maxshape=(None,None,None,None))
+                _ = f.create_dataset("latent_vector", data=noise_vector.to('cpu').numpy(), compression='gzip', compression_opts=9, chunks=True, maxshape=(None,None))
+                should_rewrite = False
+            else:
+                f["images"].resize((f["images"].shape[0] + output.shape[0]), axis = 0)
+                f["latent_vector"].resize((f["latent_vector"].shape[0] + noise_vector.shape[0]), axis = 0)
+                f["images"][-output.shape[0]:] = output
+                f["latent_vector"][-noise_vector.shape[0]:] = noise_vector
+
+            
+    
+
+if __name__ == "__main__":
+    main()

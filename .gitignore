@@ -169,3 +169,5 @@ src/third_party/
 data/largescale/images
 data/imagenet
 data/cocoattribute
+
+**/*.hdf5
