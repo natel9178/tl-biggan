@@ -22,7 +22,7 @@ def main():
     opt.cuda = not opt.no_cuda
     device = torch.device('cuda' if opt.cuda else 'cpu')
 
-    generator = BigGAN.from_pretrained('biggan-deep-512')
+    generator = BigGAN.from_pretrained('biggan-deep-512').to(device)
 
     with h5py.File(opt.save_loc, 'a') as f:
         class_vector = torch.from_numpy(one_hot_from_int(opt.imagenet_class, batch_size=opt.batch_size)).to(device)
@@ -37,7 +37,7 @@ def main():
             noise_vector = torch.from_numpy(truncated_noise_sample(truncation=opt.truncation, batch_size=opt.batch_size)).to(device)
 
             with torch.no_grad():
-                output = generator(noise_vector, class_vector, opt.truncation).to(device)
+                output = generator(noise_vector, class_vector, opt.truncation)
                 output = output.permute(0, 2, 3, 1)
                 output = (((output + 1) / 2.0) * 256 ).round().clamp(0, 255)
             
