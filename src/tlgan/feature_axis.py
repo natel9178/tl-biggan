@@ -3,6 +3,7 @@ import numpy as np
 import sklearn.linear_model as linear_model
 import h5py
 import pickle
+import time
 
 def find_feature_axis(z, y, method='linear', **kwargs_model):
     if method == 'linear':
@@ -32,9 +33,21 @@ def main():
     opt = parser.parse_args()
 
     with h5py.File(opt.labels_loc, 'r') as l, h5py.File(opt.samples_loc, 'r') as s:
-        z, y = s['latent_vector'][:], l['labels'][:]
-        feature_slope = normalize_feature_axis(find_feature_axis(z, y, method='tanh'))
+        print('Loading latent vectors')
+        now = time.time()
+        z = s['latent_vector'][:]
+        print('Latent vectors took', now - time.time(), 'to load')
+        print('Loading labels')
+        now = time.time()
+        y = l['labels'][:, :30]
+        print('Labels took', now - time.time(), 'to load')
 
+        print('Finding feature axis')
+        now = time.time()
+        feature_slope = normalize_feature_axis(find_feature_axis(z, y, method='tanh'))
+        print('Feature axis took', now - time.time(), 'to find')
+
+        print('Saving feature axis')
         with open(opt.f_save_dir, 'wb') as f:
             pickle.dump(feature_slope, f)
 
