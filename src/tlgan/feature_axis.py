@@ -22,7 +22,9 @@ def find_feature_axis(z, y, method='linear', **kwargs_model):
     return model.coef_.transpose()
 
 def normalize_feature_axis(feature_slope):
-    feature_direction = feature_slope / np.linalg.norm(feature_slope, ord=2, axis=0, keepdims=True)
+    norm_vector = np.linalg.norm(feature_slope, ord=2, axis=0, keepdims=True)
+    feature_direction = feature_slope / norm_vector
+    print(norm_vector)
     return feature_direction
 
 def main():
