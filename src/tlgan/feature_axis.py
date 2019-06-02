@@ -37,16 +37,16 @@ def main():
         print('Loading latent vectors')
         now = time.time()
         z = s['latent_vector'][:]
-        print('Latent vectors took', now - time.time(), 'to load')
+        print('Latent vectors took', time.time() - now, 'to load')
         print('Loading labels')
         now = time.time()
         y = l['labels'][:, :opt.features_limit]
-        print('Labels took', now - time.time(), 'to load')
+        print('Labels took', time.time() - now, 'to load')
 
         print('Finding feature axis')
         now = time.time()
         feature_slope = normalize_feature_axis(find_feature_axis(z, y, method='tanh'))
-        print('Feature axis took', now - time.time(), 'to find')
+        print('Feature axis took', time.time() - now, 'to find')
 
         print('Saving feature axis')
         with open(opt.f_save_dir, 'wb') as f:
