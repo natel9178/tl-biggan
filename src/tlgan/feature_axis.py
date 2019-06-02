@@ -32,7 +32,7 @@ def main():
     opt = parser.parse_args()
 
     with h5py.File(opt.labels_loc, 'r') as l, h5py.File(opt.samples_loc, 'r') as s:
-        z, y = l['latent_vector'][:], s['labels'][:]
+        z, y = s['latent_vector'][:], l['labels'][:]
         feature_slope = normalize_feature_axis(find_feature_axis(z, y, method='tanh'))
 
         with open(opt.f_save_dir, 'wb') as f:
