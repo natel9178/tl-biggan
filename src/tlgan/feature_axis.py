@@ -26,8 +26,8 @@ def normalize_feature_axis(feature_slope):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-labels_loc', default='./tlgan/gan_samples_labels.hdf5')
-    parser.add_argument('-samples_loc', default='./tlgan/gan_samples.hdf5')
+    parser.add_argument('-labels_loc', default='./gan_samples_labels.hdf5')
+    parser.add_argument('-samples_loc', default='./gan_samples.hdf5')
     parser.add_argument('-f_save_dir', default='./feature_direction.pkl')
     opt = parser.parse_args()
 
