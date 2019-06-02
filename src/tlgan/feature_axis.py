@@ -1,16 +1,10 @@
-
+import argparse
+import numpy as np
+import sklearn.linear_model as linear_model
+import h5py
+import pickle
 
 def find_feature_axis(z, y, method='linear', **kwargs_model):
-    """
-    function to find axis in the latent space that is predictive of feature vectors
-
-    :param z: vectors in the latent space, shape=(num_samples, num_latent_vector_dimension)
-    :param y: feature vectors, shape=(num_samples, num_features)
-    :param method: one of ['linear', 'logistic'], or a sklearn.linear_model object, (eg. sklearn.linear_model.ElasticNet)
-    :param kwargs_model: parameters specific to a sklearn.linear_model object, (eg., penalty=’l2’)
-    :return: feature vectors, shape = (num_latent_vector_dimension, num_features)
-    """
-
     if method == 'linear':
         model = linear_model.LinearRegression(**kwargs_model)
         model.fit(z, y)
@@ -25,3 +19,24 @@ def find_feature_axis(z, y, method='linear', **kwargs_model):
         raise Exception('method has to be one of ["linear", "tanh"]')
 
     return model.coef_.transpose()
+
+def normalize_feature_axis(feature_slope):
+    feature_direction = feature_slope / np.linalg.norm(feature_slope, ord=2, axis=0, keepdims=True)
+    return feature_direction
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-labels_loc', default='./tlgan/gan_samples_labels.hdf5')
+    parser.add_argument('-samples_loc', default='./tlgan/gan_samples.hdf5')
+    parser.add_argument('-f_save_dir', default='./feature_direction.pkl')
+    opt = parser.parse_args()
+
+    with h5py.File(opt.labels_loc, 'r') as l, h5py.File(opt.samples_loc, 'r') as s:
+        z, y = l['latent_vector'][:], s['labels'][:]
+        feature_slope = normalize_feature_axis(find_feature_axis(z, y, method='tanh'))
+
+        with open(opt.f_save_dir, 'wb') as f:
+            pickle.dump(feature_slope, f)
+
+if __name__ == "__main__":
+    main()
