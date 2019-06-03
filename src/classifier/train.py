@@ -124,6 +124,7 @@ def main():
     parser.add_argument('-epoch', type=int, default=100)
     parser.add_argument('-batch_size', type=int, default=16)
     parser.add_argument('-lr', type=float, default=1e-3)
+    parser.add_argument('-unfreeze_last_block', action='store_true')
 
     parser.add_argument('-load_model', default=None)
     parser.add_argument('-save_model', default=None)
@@ -137,7 +138,8 @@ def main():
     device = torch.device('cuda' if opt.cuda else 'cpu')
 
     model = AttributeClassifier(out_features=u.out_features, device=device)
-    u.unfreeze_layers(model)
+    if opt.unfreeze_last_block:
+        u.unfreeze_layers(model)
 
     train = pickle.load( open(  os.path.join(dataset_root,"train.pkl"), "rb" ) )
     val = pickle.load( open(  os.path.join(dataset_root,"val.pkl"), "rb" ) )
