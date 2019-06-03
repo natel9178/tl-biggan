@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-def functional_bfe_with_logits(input, target, gamma=2., alpha=0.25, size_average=True, eps=1e-10):
+def functional_bfe_with_logits(input, target, gamma=2., alpha=0.25, size_average=True, eps=1e-7):
     probs = torch.clamp(torch.sigmoid(input), eps, 1.0 - eps)
     loss = - (( alpha * ( (1 - probs) ** gamma ) * target * torch.log(probs))  + ((1. - alpha) * (1. - target) * (probs ** gamma) * torch.log(1 - probs)))
     if size_average: return loss.mean()
