@@ -6,7 +6,7 @@ from skimage import io, transform
 from PIL import Image
 import numpy as np
 import torch
-import utils as u
+import .utils as u
 
 # 078017
 class LargeScaleAttributesDataset(Dataset):
