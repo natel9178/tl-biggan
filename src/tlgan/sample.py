@@ -15,7 +15,7 @@ def main():
     parser.add_argument('-epochs', type=int, default=5)
     parser.add_argument('-batch_size', type=int, default=8)
     parser.add_argument('-save_loc', default='./gan_samples.hdf5')
-    parser.add_argument('-truncation', type=float, default=0.7)
+    parser.add_argument('-truncation', type=float, default=1)
     parser.add_argument('-imagenet_class', type=int, default=235)
     parser.add_argument('-no_cuda', action='store_true')
     opt = parser.parse_args()
