@@ -141,9 +141,9 @@ def main():
     if opt.unfreeze_last_block:
         u.unfreeze_layers(model)
 
-    train = pickle.load( open(  os.path.join(dataset_root,"train.pkl"), "rb" ) )
-    val = pickle.load( open(  os.path.join(dataset_root,"val.pkl"), "rb" ) )
-    training_data, validation_data = u.create_dataloaders(train, val, batch_size=opt.batch_size)
+    train_d = pickle.load( open(  os.path.join(dataset_root,"train.pkl"), "rb" ) )
+    val_d = pickle.load( open(  os.path.join(dataset_root,"val.pkl"), "rb" ) )
+    training_data, validation_data = u.create_dataloaders(train_d, val_d, batch_size=opt.batch_size)
 
     #- Output total number of parameters
     summary(model, input_size=(3, 299, 299))
