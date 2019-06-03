@@ -6,7 +6,6 @@ from skimage import io, transform
 from PIL import Image
 import numpy as np
 import torch
-import .utils as u
 
 # 078017
 class LargeScaleAttributesDataset(Dataset):
@@ -37,7 +36,7 @@ class LargeScaleAttributesDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        sample = {'image': image, 'attributes': torch.Tensor(self.attributes.iloc[idx, 2][:u.out_features])}
+        sample = {'image': image, 'attributes': torch.Tensor(self.attributes.iloc[idx, 2][:337])}
 
         return sample
 
