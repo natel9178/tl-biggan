@@ -17,6 +17,7 @@ from torchvision import transforms
 from torchsummary import summary
 from torch.utils.tensorboard import SummaryWriter
 from scheduler import GradualWarmupScheduler
+import pickle
 
 dataset_root = '../../data/largescale/'
 normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
@@ -135,16 +136,12 @@ def main():
     opt.cuda = not opt.no_cuda
     device = torch.device('cuda' if opt.cuda else 'cpu')
 
-    model = AttributeClassifier(out_features=359, device=device)
+    model = AttributeClassifier(out_features=u.out_features, device=device)
     u.unfreeze_layers(model)
 
-    tf = transforms.Compose([ transforms.RandomResizedCrop(229), transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize ])
-    full_dataset = LargeScaleAttributesDataset( attributes_file=os.path.join(dataset_root, 'LAD_annotations/attributes.txt'),
-                                                attributes_list=os.path.join(dataset_root, 'LAD_annotations/attribute_list.txt'),
-                                                label_list= os.path.join(dataset_root, 'LAD_annotations/label_list.txt'),
-                                                root_dir=dataset_root,
-                                                transform=tf)
-    training_data, validation_data = u.create_dataloaders(full_dataset, batch_size=opt.batch_size)
+    train = pickle.load( open(  os.path.join(dataset_root,"train.pkl"), "rb" ) )
+    val = pickle.load( open(  os.path.join(dataset_root,"val.pkl"), "rb" ) )
+    training_data, validation_data = u.create_dataloaders(train, val, batch_size=opt.batch_size)
 
     #- Output total number of parameters
     summary(model, input_size=(3, 299, 299))

@@ -6,6 +6,7 @@ from skimage import io, transform
 from PIL import Image
 import numpy as np
 import torch
+import utils as u
 
 # 078017
 class LargeScaleAttributesDataset(Dataset):
@@ -16,6 +17,7 @@ class LargeScaleAttributesDataset(Dataset):
                 on a sample.
         """
         self.attributes = pd.read_csv(attributes_file, header=None)
+        self.attributes = self.attributes[:-600]
         self.attributes[2] = self.attributes[2].map(lambda x: [int(y) for y in x.strip(" []").split()])
         self.num_attributes = len(self.attributes.iloc[0, 2])
         # print(self.num_attributes)
@@ -35,12 +37,14 @@ class LargeScaleAttributesDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        sample = {'image': image, 'attributes': torch.Tensor(self.attributes.iloc[idx, 2])}
+        sample = {'image': image, 'attributes': torch.Tensor(self.attributes.iloc[idx, 2][:u.out_features])}
 
         return sample
 
 if __name__ == "__main__":
-    data = LargeScaleAttributesDataset( attributes_file='./largescale/LAD_annotations/attributes.txt',
-                                        attributes_list='./largescale/LAD_annotations/attribute_list.txt',
-                                        label_list='./largescale/LAD_annotations/label_list.txt',
-                                        root_dir='./largescale')
+    data = LargeScaleAttributesDataset( attributes_file='../../data/largescale/LAD_annotations/attributes.txt',
+                                        attributes_list='../../data/largescale/LAD_annotations/attribute_list.txt',
+                                        label_list='../../data/largescale/LAD_annotations/label_list.txt',
+                                        root_dir='../../data/largescale/')
+    print(len(data))
+    print(len(data[0]['attributes']))

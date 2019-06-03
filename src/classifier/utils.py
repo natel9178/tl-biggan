@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from .losses import functional_bfe_with_logits
+from losses import functional_bfe_with_logits
 from sklearn.metrics import f1_score
 
 
@@ -42,14 +42,17 @@ def unfreeze_layers(model):
     for bm_param in model.bm.bn4.parameters():
         bm_param.requires_grad = True
 
-def create_dataloaders(dataset, training_split=0.9, batch_size=2, overfit_len=None, validation_batch_size=128):
+def split_dataset(dataset, training_split=0.9):
     training_length = int(len(dataset) * training_split)
-    if overfit_len:
-        training_dataset, validation_dataset, _ = d.random_split(dataset, [overfit_len, overfit_len, len(dataset) - overfit_len*2])
-    else:
-        training_dataset, validation_dataset = d.random_split(dataset, [training_length, len(dataset) - training_length])
+    valid_len = int((len(dataset) - training_length) / 2)
+    test_len = int(len(dataset) - training_length - valid_len)
+    training_dataset, validation_dataset, test_dataset = d.random_split(dataset, [training_length, valid_len, test_len])
+    return training_dataset, validation_dataset, test_dataset
 
+def create_dataloaders(training_dataset, validation_dataset, training_split=0.9, batch_size=2, overfit_len=None, validation_batch_size=128):
     training_data = d.DataLoader(training_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=2, pin_memory=True)
     validation_data = d.DataLoader(validation_dataset, batch_size=validation_batch_size, shuffle=True, drop_last=False, num_workers=2, pin_memory=True)
 
     return training_data, validation_data
+
+out_features = 337
