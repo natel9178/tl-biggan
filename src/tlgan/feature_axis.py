@@ -25,7 +25,7 @@ def normalize_feature_axis(feature_slope):
     norm_vector = np.linalg.norm(feature_slope, ord=2, axis=0, keepdims=True)
     feature_direction = feature_slope / norm_vector
     print(norm_vector)
-    return feature_direction
+    return feature_direction, norm_vector
 
 def main():
     parser = argparse.ArgumentParser()
@@ -47,12 +47,12 @@ def main():
 
         print('Finding feature axis')
         now = time.time()
-        feature_slope = normalize_feature_axis(find_feature_axis(z, y, method='tanh'))
+        feature_slope, norm_vector = normalize_feature_axis(find_feature_axis(z, y, method='tanh'))
         print('Feature axis took', time.time() - now, 'to find')
 
         print('Saving feature axis')
         with open(opt.f_save_dir, 'wb') as f:
-            pickle.dump(feature_slope, f)
+            pickle.dump({'slopes': feature_slope, 'norm':norm_vector}, f)
 
 if __name__ == "__main__":
     main()
