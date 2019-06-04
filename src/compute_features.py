@@ -16,9 +16,6 @@ from classifier.Predictor import AttributeClassifierInference
 import h5py
 from torch.utils.data import Dataset, DataLoader
 
-normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
-                                  std=[0.5, 0.5, 0.5])
-
 class GenGanSamplesDataset(Dataset):
     def __init__(self, samples_filepath, transform=None):
         """
@@ -63,10 +60,12 @@ def main():
     parser.add_argument('-samples_loc', default='./tlgan/gan_samples')
     parser.add_argument('-model_weight_loc', default='./focal_model_2_finetune_2c')
     parser.add_argument('-no_cuda', action='store_true')
+    parser.add_argument('-use_mobilenet', action='store_true')
     opt = parser.parse_args()
     opt.cuda = not opt.no_cuda
     device = torch.device('cuda' if opt.cuda else 'cpu')
     
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]) if opt.use_mobilenet else transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]) 
     tf = transforms.Compose([ transforms.ToPILImage(), transforms.Resize(229), transforms.ToTensor(), normalize ])
     data = GenGanSamplesDataset(opt.samples_loc + '.hdf5', transform=tf)
     dataloader = DataLoader(data, batch_size=opt.batch_size, num_workers=2)
