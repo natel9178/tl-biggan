@@ -138,8 +138,8 @@ def main():
     opt.cuda = not opt.no_cuda
     device = torch.device('cuda' if opt.cuda else 'cpu')
 
-    model = AttributeClassifier(out_features=u.out_features, device=device)
-    if opt.unfreeze_last_block:
+    model = AttributeClassifier(out_features=u.out_features, device=device, use_mobilenet=opt.use_mobilenet)
+    if opt.unfreeze_last_block and not opt.use_mobilenet:
         u.unfreeze_layers(model)
 
     image_input_size = 224 if opt.use_mobilenet else 299
