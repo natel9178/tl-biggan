@@ -152,8 +152,6 @@ def main():
 
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr)
     # scheduler_plateau = ls.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
-    scheduler_cosine = ls.CosineAnnealingLR(optimizer, 100, 0)
-    scheduler_warmup = GradualWarmupScheduler(optimizer, multiplier=4, total_epoch=10, after_scheduler=scheduler_cosine)
 
     start_epoch = 0
     log_tensorboard = opt.log_tensorboard
@@ -164,6 +162,9 @@ def main():
         saved_opt = checkpoint['settings']
         # if 'optimizer' in checkpoint: optimizer.load_state_dict(checkpoint['optimizer'])
         if not log_tensorboard: log_tensorboard = saved_opt.log_tensorboard
+
+    scheduler_cosine = ls.CosineAnnealingLR(optimizer, opt.epoch - start_epoch, 0)
+    scheduler_warmup = GradualWarmupScheduler(optimizer, multiplier=4, total_epoch=6, after_scheduler=scheduler_cosine)
 
     train(model, training_data, validation_data, optimizer, scheduler_warmup, device, opt, start_epoch, log_tensorboard)
 
