@@ -9,14 +9,16 @@ import torch.nn.functional as F
 
 import pretrainedmodels as pm
 import pretrainedmodels.utils as utils
-import torchvision.models as models
+import mobilenet
 from torchsummary import summary
 
 class AttributeClassifier(nn.Module):
     def __init__(self, out_features=10, base_model_name='xception', hidden_size=1024, device='cuda', use_mobilenet=False):
         super(AttributeClassifier, self).__init__()
         if use_mobilenet:
-            self.bm = models.mobilenet.MobileNetV2(pretrained=True).to(device)
+            self.bm = mobilenet.MobileNetV2(n_class=1000).to(device)
+            state_dict = torch.load('mobilenetv2.pth.tar', map_location=device)
+            self.bm.load_state_dict(state_dict)
             self.bm.classifier = pm.utils.Identity()
         else:
             self.bm = pm.__dict__[base_model_name](num_classes=1000, pretrained='imagenet').to(device)

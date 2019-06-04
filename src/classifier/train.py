@@ -18,12 +18,10 @@ from torchsummary import summary
 from torch.utils.tensorboard import SummaryWriter
 from scheduler import GradualWarmupScheduler
 import pickle
+import mobilenet
 
-use_mobilenet = False
 dataset_root = '../../data/largescale/'
-normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225]) if use_mobilenet else transforms.Normalize(mean=[0.5, 0.5, 0.5],
-                                  std=[0.5, 0.5, 0.5]) 
+
 
 def run_epoch(model, data, device, is_train=False, optimizer=None, calculate_every=100):
     if is_train: model.train()
@@ -132,6 +130,7 @@ def main():
     parser.add_argument('-save_model', default=None)
     parser.add_argument('-save_mode', type=str, choices=['all', 'best'], default='best')
     parser.add_argument('-log_tensorboard', default=None)
+    parser.add_argument('-use_mobilenet', action='store_true')
 
     parser.add_argument('-no_cuda', action='store_true')
 
@@ -143,12 +142,17 @@ def main():
     if opt.unfreeze_last_block:
         u.unfreeze_layers(model)
 
+    image_input_size = 224 if opt.use_mobilenet else 299
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]) if opt.use_mobilenet else transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]) 
+    tf = transforms.Compose([ transforms.RandomResizedCrop(image_input_size), transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize ])
     train_d = pickle.load( open(  os.path.join(dataset_root,"train.pkl"), "rb" ) )
     val_d = pickle.load( open(  os.path.join(dataset_root,"val.pkl"), "rb" ) )
+    train_d.transform = tf
+    val_d.transform = tf
     training_data, validation_data = u.create_dataloaders(train_d, val_d, batch_size=opt.batch_size)
 
     #- Output total number of parameters
-    summary(model, input_size=(3, 299, 299))
+    summary(model, input_size=(3, image_input_size, image_input_size))
 
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr)
     # scheduler_plateau = ls.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
