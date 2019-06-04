@@ -9,15 +9,20 @@ import torch.nn.functional as F
 
 import pretrainedmodels as pm
 import pretrainedmodels.utils as utils
+import torchvision.models as models
 from torchsummary import summary
 
 class AttributeClassifier(nn.Module):
-    def __init__(self, out_features=10, base_model_name='xception', hidden_size=1024, device='cuda'):
+    def __init__(self, out_features=10, base_model_name='xception', hidden_size=1024, device='cuda', use_mobilenet=False):
         super(AttributeClassifier, self).__init__()
-        self.bm = pm.__dict__[base_model_name](num_classes=1000, pretrained='imagenet').to(device)
-        self.bm_feature_dim = self.bm.last_linear.in_features
-        self.input_size = self.bm.input_size
-        self.bm.last_linear = pm.utils.Identity()
+        if use_mobilenet:
+            self.bm = models.mobilenet.MobileNetV2(pretrained=True).to(device)
+            self.bm.classifier = pm.utils.Identity()
+        else:
+            self.bm = pm.__dict__[base_model_name](num_classes=1000, pretrained='imagenet').to(device)
+            self.bm_feature_dim = self.bm.last_linear.in_features
+            self.input_size = self.bm.input_size
+            self.bm.last_linear = pm.utils.Identity()
 
         for bm_param in self.bm.parameters():
             bm_param.requires_grad = False

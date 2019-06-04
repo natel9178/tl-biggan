@@ -24,7 +24,7 @@ normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
                                   std=[0.5, 0.5, 0.5])
 
 def main():
-    tf = transforms.Compose([ transforms.RandomResizedCrop(229), transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize ])
+    tf = transforms.Compose([ transforms.RandomResizedCrop(299), transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize ]) ## 229 while training..
     full_dataset = LargeScaleAttributesDataset( attributes_file=os.path.join(dataset_root, 'LAD_annotations/attributes.txt'),
                                                 attributes_list=os.path.join(dataset_root, 'LAD_annotations/attribute_list.txt'),
                                                 label_list= os.path.join(dataset_root, 'LAD_annotations/label_list.txt'),

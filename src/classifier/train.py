@@ -19,9 +19,11 @@ from torch.utils.tensorboard import SummaryWriter
 from scheduler import GradualWarmupScheduler
 import pickle
 
+use_mobilenet = False
 dataset_root = '../../data/largescale/'
-normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
-                                  std=[0.5, 0.5, 0.5])
+normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225]) if use_mobilenet else transforms.Normalize(mean=[0.5, 0.5, 0.5],
+                                  std=[0.5, 0.5, 0.5]) 
 
 def run_epoch(model, data, device, is_train=False, optimizer=None, calculate_every=100):
     if is_train: model.train()

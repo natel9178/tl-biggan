@@ -47,7 +47,7 @@ class GenGanSamplesDataset(Dataset):
 
 def process_samples(predictor, dataloader, N, device):
     predictor.eval()
-    labels = np.zeros((N,359))
+    labels = np.zeros((N, u.out_features))
     for batch in tqdm(dataloader, desc='Processing Generated Images'):
         images, idxs = batch
         images = images.to(device)
@@ -72,7 +72,7 @@ def main():
     dataloader = DataLoader(data, batch_size=opt.batch_size, num_workers=2)
 
     checkpoint = torch.load(opt.model_weight_loc + '.chkpt', map_location=device)
-    classifier = AttributeClassifier(out_features=359, device=device)
+    classifier = AttributeClassifier(out_features=u.out_features, device=device)
     classifier.load_state_dict(checkpoint['model'], strict=False)
     predictor = AttributeClassifierInference(attribute_classifier=classifier, device=device)
     labels = process_samples(predictor, dataloader, len(data), device)
