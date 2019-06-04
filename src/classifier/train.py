@@ -10,7 +10,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.optim.lr_scheduler as ls
 import torch.utils.data as d
-from AttributeClassifier import AttributeClassifier
+from AttributeClassifier import AttributeClassifier, AttributeClassifierMobileNet
 from LargeScaleAttributesDataset import LargeScaleAttributesDataset
 import utils as u
 from torchvision import transforms
@@ -138,9 +138,14 @@ def main():
     opt.cuda = not opt.no_cuda
     device = torch.device('cuda' if opt.cuda else 'cpu')
 
-    model = AttributeClassifier(out_features=u.out_features, device=device, use_mobilenet=opt.use_mobilenet)
-    if opt.unfreeze_last_block and not opt.use_mobilenet:
-        u.unfreeze_layers(model)
+    if opt.use_mobilenet:
+        model = AttributeClassifierMobileNet(out_features=u.out_features, device=device)
+    else:
+        model = AttributeClassifier(out_features=u.out_features, device=device)
+        if opt.unfreeze_last_block:
+            u.unfreeze_layers(model)
+    
+    
 
     image_input_size = 224 if opt.use_mobilenet else 299
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]) if opt.use_mobilenet else transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]) 
