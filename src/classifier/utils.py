@@ -50,8 +50,8 @@ def split_dataset(dataset, training_split=0.9):
     return training_dataset, validation_dataset, test_dataset
 
 def create_dataloaders(training_dataset, validation_dataset, training_split=0.9, batch_size=2, overfit_len=None, validation_batch_size=128):
-    training_data = d.DataLoader(training_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=2, pin_memory=True)
-    validation_data = d.DataLoader(validation_dataset, batch_size=validation_batch_size, shuffle=True, drop_last=False, num_workers=2, pin_memory=True)
+    training_data = d.DataLoader(training_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=4, pin_memory=True)
+    validation_data = d.DataLoader(validation_dataset, batch_size=validation_batch_size, shuffle=True, drop_last=False, num_workers=4, pin_memory=True)
 
     return training_data, validation_data
 
