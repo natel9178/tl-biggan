@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from losses import functional_bfe_with_logits
+from .losses import functional_bfe_with_logits
 from sklearn.metrics import f1_score
 
 
