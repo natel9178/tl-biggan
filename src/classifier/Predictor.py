@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .AttributeClassifier import AttributeClassifier
-import utils as u
+import classifier.utils as u
 
 class AttributeClassifierInference(nn.Module):
     def __init__(self, checkpoint_filename=None, attribute_classifier=None, device='cpu'):
