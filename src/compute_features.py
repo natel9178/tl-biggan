@@ -57,6 +57,7 @@ def process_samples(predictor, dataloader, N, device):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-batch_size', type=int, default=128)
+    parser.add_argument('-dataloader_workers', type=int, default=8)
     parser.add_argument('-samples_loc', default='./tlgan/gan_samples')
     parser.add_argument('-model_weight_loc', default='./focal_model_2_finetune_2c')
     parser.add_argument('-no_cuda', action='store_true')
@@ -68,7 +69,7 @@ def main():
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]) if opt.use_mobilenet else transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]) 
     tf = transforms.Compose([ transforms.ToPILImage(), transforms.Resize(229), transforms.ToTensor(), normalize ])
     data = GenGanSamplesDataset(opt.samples_loc + '.hdf5', transform=tf)
-    dataloader = DataLoader(data, batch_size=opt.batch_size, num_workers=8)
+    dataloader = DataLoader(data, batch_size=opt.batch_size, num_workers=opt.dataloader_workers)
 
     checkpoint = torch.load(opt.model_weight_loc + '.chkpt', map_location=device)
     classifier = AttributeClassifier(out_features=u.out_features, device=device)
