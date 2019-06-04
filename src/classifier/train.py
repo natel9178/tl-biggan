@@ -153,7 +153,7 @@ def main():
     train_d = pickle.load( open(  os.path.join(dataset_root,"train.pkl"), "rb" ) )
     val_d = pickle.load( open(  os.path.join(dataset_root,"val.pkl"), "rb" ) )
     train_d.transform = tf
-    val_d.transform = tf
+    val_d.transform = transforms.Compose([ transforms.ToTensor(), normalize ])
     training_data, validation_data = u.create_dataloaders(train_d, val_d, batch_size=opt.batch_size)
 
     #- Output total number of parameters
