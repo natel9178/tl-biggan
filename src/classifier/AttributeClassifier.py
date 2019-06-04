@@ -23,7 +23,7 @@ class AttributeClassifierMobileNet(nn.Module):
         self.bm.classifier = nn.Sequential(
             nn.Dropout(0.2),
             nn.Linear(self.bm.last_channel, out_features),
-        )
+        ).to(device)
         for bm_param in self.bm.classifier.parameters():
             bm_param.requires_grad = True
 
