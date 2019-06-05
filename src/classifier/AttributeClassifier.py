@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 import pretrainedmodels as pm
 import pretrainedmodels.utils as utils
-from . import mobilenet
+from classifier import mobilenet
 from torchsummary import summary
 
 class AttributeClassifierMobileNet(nn.Module):
